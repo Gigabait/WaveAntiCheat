@@ -3,6 +3,32 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
+int FindProcess(std::wstring ProcessName)
+{
+	if (ProcessName.length() == 0)
+	{
+		return 0;
+	}
+
+	PROCESSENTRY32 Entry;
+	Entry.dwSize = sizeof(Entry);
+
+	HANDLE Flash = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+	if (Process32First(Flash, &Entry))
+	{
+		do 
+		{
+			if (wcscmp(Entry.szExeFile, ProcessName.c_str()) == 0)
+			{
+				return Entry.th32ProcessID;
+			}
+		} while (Process32Next(Flash, &Entry));
+	}
+
+	return 0;
+}
+
 int AttachClient(unsigned int ProcessID)
 {
 	WIN32_FIND_DATA FindDLLData;
@@ -11,7 +37,7 @@ int AttachClient(unsigned int ProcessID)
 	{
 		FindClose(DLLHandle);
 
-		return WACERR_NODLL;
+		return WACAC_NODLL;
 	}
 
 	// DLL Exists, Close the Handle
@@ -20,7 +46,7 @@ int AttachClient(unsigned int ProcessID)
 	HANDLE Target = OpenProcess(PROCESS_ALL_ACCESS, false, ProcessID);
 	if (!Target || Target == INVALID_HANDLE_VALUE)
 	{
-		return WACERR_NOPROCESS;
+		return WACAC_NOPROCESS;
 	}
 
 	// Begin Injection
@@ -37,12 +63,12 @@ int AttachClient(unsigned int ProcessID)
 	{
 		CloseHandle(Target);
 
-		return WACERR_UNKNOWN;
+		return WACAC_UNKNOWN;
 	}
 
 	VirtualFreeEx(Target, DLLPathPayload, ARRAYSIZE(WAC_CLIENT_PATHNAME), MEM_RELEASE);
 	CloseHandle(TargetLoaderThread);
 	CloseHandle(Target);
 
-	return WACERR_NOERROR;
+	return WACAC_NOERR;
 }
