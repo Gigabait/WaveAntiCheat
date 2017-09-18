@@ -3,6 +3,7 @@
 #include "Service.h"
 #include "ServiceManager.h"
 #include "../Runtime/RuntimeManager.h"
+#include "../Client/ClientManager.h"
 
 #define SERVICE_NAME         L"WACService"
 #define SERVICE_DISPLAY_NAME L"Wave Anti-Cheat Service"
@@ -12,6 +13,10 @@
 #define SERVICE_PASSWORD     NULL
 
 #define SCAN_INTERVAL_MS     5000
+
+#define PRINT_USAGE wprintf(L"Guard Usage:\n"); \
+					wprintf(L" -guard -id PID\n"); \
+					wprintf(L" -guard -name Name\n\n");
 
 int wmain(int ArgCount, wchar_t* Args[])
 {
@@ -29,22 +34,42 @@ int wmain(int ArgCount, wchar_t* Args[])
 
 		else if (_wcsicmp(L"guard", Args[1] + 1) == 0)
 		{
-			if (ArgCount == 3)
+			if (ArgCount > 3)
 			{
+				unsigned int PID;
 				WACService* WAC = new WACService(SERVICE_NAME, TRUE, TRUE, FALSE);
+
+				if (_wcsicmp(L"id", Args[2] + 1) == 0)
+				{
+					PID = _wtoi(Args[3]);
+				}
+
+				else if (_wcsicmp(L"name", Args[2] + 1) == 0)
+				{
+					PID = FindProcess(Args[3]);
+				}
+
+				else
+				{
+					PRINT_USAGE
+
+					return 1;
+				}
+
+				AttachClient(PID);
 
 				// Begin Service Message Handler
 				WACService::Run(*WAC);
 
 				// Begin WAC Runtime
-				Run(*WAC, SCAN_INTERVAL_MS);
+				Run(*WAC, PID, SCAN_INTERVAL_MS);
 
 				delete WAC;
 			}
 
 			else
 			{
-				wprintf(L"Usage: -guard PID\n");
+				PRINT_USAGE
 
 				return 1;
 			}
@@ -54,10 +79,12 @@ int wmain(int ArgCount, wchar_t* Args[])
 	else
 	{
 		wprintf(L"Parameters:\n");
-		wprintf(L" -install    Installs the service.\n");
-		wprintf(L" -uninstall  Uninstalls the service.\n\n");
-		wprintf(L" -guard PID  Activates the service, begins safeguarding the process specified from threats.\n"
-				 "             The service will resume idling when the target process closes.\n\n");
+		wprintf(L" -install      Installs the service.\n");
+		wprintf(L" -uninstall    Uninstalls the service.\n\n");
+		wprintf(L" -guard  Activates the service, begins safeguarding the process specified from threats.\n"
+				 "               The service will resume idling when the target process closes.\n\n");
+
+		PRINT_USAGE
 
 		return 1;
 	}
