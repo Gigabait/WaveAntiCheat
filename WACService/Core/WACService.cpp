@@ -15,12 +15,18 @@ int wmain(int ArgCount, wchar_t* Args[])
 	{
 		if (_wcsicmp(L"install", Args[1] + 1) == 0)
 		{
-			
+			InstallWACService(
+				SERVICE_NAME,
+				SERVICE_DISPLAY_NAME,
+				SERVICE_START_TYPE,
+				SERVICE_DEPENDENCIES,
+				SERVICE_ACCOUNT,
+				SERVICE_PASSWORD);
 		}
 
 		else if (_wcsicmp(L"uninstall", Args[1] + 1) == 0)
 		{
-
+			UninstallWACService(SERVICE_NAME);
 		}
 	}
 
