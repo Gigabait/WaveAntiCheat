@@ -37,7 +37,6 @@ int wmain(int ArgCount, wchar_t* Args[])
 			if (ArgCount > 3)
 			{
 				unsigned int PID;
-				WACService* WAC = new WACService(SERVICE_NAME, TRUE, TRUE, FALSE);
 
 				if (_wcsicmp(L"id", Args[2] + 1) == 0)
 				{
@@ -56,7 +55,14 @@ int wmain(int ArgCount, wchar_t* Args[])
 					return 1;
 				}
 
-				AttachClient(PID);
+				if (AttachClient(PID) != WACAC_NOERR)
+				{
+					MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Connect to Target Process", L"WAC Fatal Error", MB_OK | MB_ICONERROR);
+
+					return 1;
+				}
+
+				WACService* WAC = new WACService(SERVICE_NAME, TRUE, TRUE, FALSE);
 
 				// Begin Service Message Handler
 				WACService::Run(*WAC);
