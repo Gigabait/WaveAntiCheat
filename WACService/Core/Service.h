@@ -2,11 +2,11 @@
 
 #include <Windows.h>
 
-// Singleton Base Object for Abstraction of Windows Service Prerequisites.
-class WACServiceBase
+// Singleton Service Object
+class WACService
 {
 private:
-	static WACServiceBase* Service;
+	static WACService* Service;
 
 	PWSTR Name;
 
@@ -14,28 +14,33 @@ private:
 	SERVICE_STATUS_HANDLE StatusHandle;
 
 public:
-	WACServiceBase(PWSTR ServiceName, BOOL CanStop = TRUE, BOOL CanShutdown = TRUE, BOOL CanPauseContinue = FALSE);
-	virtual ~WACServiceBase();
+	WACService(PWSTR ServiceName, BOOL CanStop = TRUE, BOOL CanShutdown = TRUE, BOOL CanPauseContinue = FALSE);
+	virtual ~WACService();
 
-	static BOOL Run(WACServiceBase& Service);
+	static BOOL Run(WACService& Service);
 
 private:
 	static void WINAPI ServiceMain(DWORD ArgCount, LPWSTR* Args);
 	static void WINAPI ServiceCtrlHandler(DWORD Ctrl);
 	
+// WINAPI Handlers
+private:
 	void Start(DWORD ArgCount, PWSTR* Args);
 	void Stop();
 	void Pause();
 	void Continue();
 	void Shutdown();
 
-protected:
-	virtual void OnStart(DWORD ArgCount, PWSTR* Args) {}
-	virtual void OnStop() {}
-	virtual void OnPause() {}
-	virtual void OnContinue() {}
-	virtual void OnShutdown() {}
+// WAC Specific Handlers
+private:
+	void WACStart(DWORD ArgCount, PWSTR* Args);
+	void WACStop();
+	void WACPause();
+	void WACContinue();
+	void WACShutdown();
 
+// Utilities
+private:
 	void SetServiceStatus(DWORD CurrentState, DWORD ExitCode = NO_ERROR, DWORD WaitHint = 0);
 
 	void WriteEventLogEntry(PWSTR Message, WORD Type);

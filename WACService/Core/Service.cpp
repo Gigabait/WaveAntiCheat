@@ -1,10 +1,10 @@
-#include "ServiceBase.h"
+#include "Service.h"
 #include <assert.h>
 #include <strsafe.h>
 
-WACServiceBase* WACServiceBase::Service = nullptr;
+WACService* WACService::Service = nullptr;
 
-WACServiceBase::WACServiceBase(PWSTR ServiceName, BOOL CanStop, BOOL CanShutdown, BOOL CanPauseContinue)
+WACService::WACService(PWSTR ServiceName, BOOL CanStop, BOOL CanShutdown, BOOL CanPauseContinue)
 {
 	Name = (ServiceName == NULL ? L"" : ServiceName);
 	StatusHandle = NULL;
@@ -24,13 +24,13 @@ WACServiceBase::WACServiceBase(PWSTR ServiceName, BOOL CanStop, BOOL CanShutdown
 	Status.dwWaitHint = 0;
 }
 
-WACServiceBase::~WACServiceBase()
+WACService::~WACService()
 {
 }
 
-BOOL WACServiceBase::Run(WACServiceBase& Service)
+BOOL WACService::Run(WACService& Service)
 {
-	WACServiceBase::Service = &Service;
+	WACService::Service = &Service;
 
 	SERVICE_TABLE_ENTRY ServiceTable[] =
 	{
@@ -41,7 +41,7 @@ BOOL WACServiceBase::Run(WACServiceBase& Service)
 	return StartServiceCtrlDispatcher(ServiceTable);
 }
 
-void WINAPI WACServiceBase::ServiceMain(DWORD ArgCount, LPWSTR* Args)
+void WINAPI WACService::ServiceMain(DWORD ArgCount, LPWSTR* Args)
 {
 	assert(Service);
 
@@ -54,7 +54,7 @@ void WINAPI WACServiceBase::ServiceMain(DWORD ArgCount, LPWSTR* Args)
 	Service->Start(ArgCount, Args);
 }
 
-void WINAPI WACServiceBase::ServiceCtrlHandler(DWORD Ctrl)
+void WINAPI WACService::ServiceCtrlHandler(DWORD Ctrl)
 {
 	switch (Ctrl)
 	{
@@ -67,12 +67,12 @@ void WINAPI WACServiceBase::ServiceCtrlHandler(DWORD Ctrl)
 	}
 }
 
-void WACServiceBase::Start(DWORD ArgCount, PWSTR* Args)
+void WACService::Start(DWORD ArgCount, PWSTR* Args)
 {
 	try
 	{
 		SetServiceStatus(SERVICE_START_PENDING);
-		OnStart(ArgCount, Args);
+		WACStart(ArgCount, Args);
 		SetServiceStatus(SERVICE_RUNNING);
 	}
 
@@ -89,14 +89,14 @@ void WACServiceBase::Start(DWORD ArgCount, PWSTR* Args)
 	}
 }
 
-void WACServiceBase::Stop()
+void WACService::Stop()
 {
 	DWORD OriginalState = Status.dwCurrentState;
 
 	try
 	{
 		SetServiceStatus(SERVICE_STOP_PENDING);
-		OnStop();
+		WACStop();
 		SetServiceStatus(SERVICE_STOPPED);
 	}
 
@@ -113,12 +113,12 @@ void WACServiceBase::Stop()
 	}
 }
 
-void WACServiceBase::Pause()
+void WACService::Pause()
 {
 	try
 	{
 		SetServiceStatus(SERVICE_PAUSE_PENDING);
-		OnPause();
+		WACPause();
 		SetServiceStatus(SERVICE_PAUSED);
 	}
 
@@ -135,12 +135,12 @@ void WACServiceBase::Pause()
 	}
 }
 
-void WACServiceBase::Continue()
+void WACService::Continue()
 {
 	try
 	{
 		SetServiceStatus(SERVICE_CONTINUE_PENDING);
-		OnContinue();
+		WACContinue();
 		SetServiceStatus(SERVICE_RUNNING);
 	}
 
@@ -157,11 +157,11 @@ void WACServiceBase::Continue()
 	}
 }
 
-void WACServiceBase::Shutdown()
+void WACService::Shutdown()
 {
 	try
 	{
-		OnShutdown();
+		WACShutdown();
 		SetServiceStatus(SERVICE_STOPPED);
 	}
 
@@ -176,7 +176,32 @@ void WACServiceBase::Shutdown()
 	}
 }
 
-void WACServiceBase::SetServiceStatus(DWORD CurrentState, DWORD ExitCode, DWORD WaitHint)
+void WACService::WACStart(DWORD ArgCount, PWSTR* Args)
+{
+
+}
+
+void WACService::WACStop()
+{
+
+}
+
+void WACService::WACPause()
+{
+
+}
+
+void WACService::WACContinue()
+{
+
+}
+
+void WACService::WACShutdown()
+{
+
+}
+
+void WACService::SetServiceStatus(DWORD CurrentState, DWORD ExitCode, DWORD WaitHint)
 {
 	static DWORD CheckPoint = 1;
 
@@ -188,7 +213,7 @@ void WACServiceBase::SetServiceStatus(DWORD CurrentState, DWORD ExitCode, DWORD 
 	::SetServiceStatus(StatusHandle, &Status);
 }
 
-void WACServiceBase::WriteEventLogEntry(PWSTR Message, WORD Type)
+void WACService::WriteEventLogEntry(PWSTR Message, WORD Type)
 {
 	HANDLE EventSource = NULL;
 	LPCWSTR Strings[2] = { NULL, NULL };
@@ -205,7 +230,7 @@ void WACServiceBase::WriteEventLogEntry(PWSTR Message, WORD Type)
 	}
 }
 
-void WACServiceBase::WriteErrorLogEntry(PWSTR Function, DWORD Error)
+void WACService::WriteErrorLogEntry(PWSTR Function, DWORD Error)
 {
 	wchar_t Message[260];
 
