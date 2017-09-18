@@ -6,8 +6,8 @@
 #define SERVICE_DISPLAY_NAME L"Wave Anti-Cheat Service"
 #define SERVICE_START_TYPE   SERVICE_DEMAND_START
 #define SERVICE_DEPENDENCIES L""
-#define SERVICE_ACCOUNT      L"NT AUTHORITY\\LocalService"
-#define SERVICE_PASSWORD     NULL 
+#define SERVICE_ACCOUNT      L"LocalSystem"
+#define SERVICE_PASSWORD     NULL
 
 int wmain(int ArgCount, wchar_t* Args[])
 {
