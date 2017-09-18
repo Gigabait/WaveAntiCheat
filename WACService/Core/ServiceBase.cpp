@@ -4,7 +4,7 @@
 
 WACServiceBase* WACServiceBase::Service = nullptr;
 
-WACServiceBase::WACServiceBase(PWSTR ServiceName, BOOL CanStop = TRUE, BOOL CanShutdown = TRUE, BOOL CanPauseContinue = FALSE)
+WACServiceBase::WACServiceBase(PWSTR ServiceName, BOOL CanStop, BOOL CanShutdown, BOOL CanPauseContinue)
 {
 	Name = (ServiceName == NULL ? L"" : ServiceName);
 	StatusHandle = NULL;
@@ -176,7 +176,7 @@ void WACServiceBase::Shutdown()
 	}
 }
 
-void WACServiceBase::SetServiceStatus(DWORD CurrentState, DWORD ExitCode = NO_ERROR, DWORD WaitHint = 0)
+void WACServiceBase::SetServiceStatus(DWORD CurrentState, DWORD ExitCode, DWORD WaitHint)
 {
 	static DWORD CheckPoint = 1;
 
@@ -205,7 +205,7 @@ void WACServiceBase::WriteEventLogEntry(PWSTR Message, WORD Type)
 	}
 }
 
-void WACServiceBase::WriteErrorLogEntry(PWSTR Function, DWORD Error = GetLastError())
+void WACServiceBase::WriteErrorLogEntry(PWSTR Function, DWORD Error)
 {
 	wchar_t Message[260];
 
