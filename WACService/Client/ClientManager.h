@@ -2,6 +2,7 @@
 
 #include <string>
 
+// Relative or Absolute
 #define WAC_CLIENT_PATHNAME L"WACClient.dll"
 
 // AttachClient() Return Codes
