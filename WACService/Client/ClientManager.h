@@ -13,5 +13,5 @@
 
 int FindProcess(std::wstring ProcessName);
 
-// Utilized WINAPI to Inject WACClient.dll into the Target
+// Utilize WINAPI to Inject the WAC CLient into the Target Process
 int AttachClient(unsigned int ProcessID);
