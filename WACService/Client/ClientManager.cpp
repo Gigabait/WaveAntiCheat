@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <assert.h>
 
 int FindProcess(std::wstring ProcessName)
 {
@@ -51,10 +52,19 @@ int AttachClient(unsigned int ProcessID)
 
 	// Begin Injection
 
-	LPVOID LoadLibraryAddress = (LPVOID)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibrary");
-	LPVOID DLLPathPayload = VirtualAllocEx(Target, NULL, ARRAYSIZE(WAC_CLIENT_PATHNAME), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	// ANSI Version of WAC Client Pathname
+	char* WAC_CLIENT_PATHNAME_A = new char[ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2 + 1];
+	ZeroMemory(WAC_CLIENT_PATHNAME_A, ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2 + 1);
+	
+	size_t WAC_CLIENT_PATHNAME_A_LENGTH = 0;
+	wcstombs_s(&WAC_CLIENT_PATHNAME_A_LENGTH, WAC_CLIENT_PATHNAME_A, ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2, WAC_CLIENT_PATHNAME, (ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2));
+	assert(WAC_CLIENT_PATHNAME_A_LENGTH > 0);
 
-	WriteProcessMemory(Target, DLLPathPayload, WAC_CLIENT_PATHNAME, ARRAYSIZE(WAC_CLIENT_PATHNAME), NULL);
+	// Load with ANSI
+	LPVOID LoadLibraryAddress = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
+	LPVOID DLLPathPayload = VirtualAllocEx(Target, NULL, WAC_CLIENT_PATHNAME_A_LENGTH, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+	WriteProcessMemory(Target, DLLPathPayload, WAC_CLIENT_PATHNAME_A, WAC_CLIENT_PATHNAME_A_LENGTH, NULL);
 
 	HANDLE TargetLoaderThread = CreateRemoteThread(Target, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibraryAddress, DLLPathPayload, 0, NULL);
 
@@ -62,13 +72,15 @@ int AttachClient(unsigned int ProcessID)
 	if (Error != 0)
 	{
 		CloseHandle(Target);
+		delete WAC_CLIENT_PATHNAME_A;
 
 		return WACAC_UNKNOWN;
 	}
 
-	VirtualFreeEx(Target, DLLPathPayload, ARRAYSIZE(WAC_CLIENT_PATHNAME), MEM_RELEASE);
+	VirtualFreeEx(Target, DLLPathPayload, WAC_CLIENT_PATHNAME_A_LENGTH, MEM_RELEASE);
 	CloseHandle(TargetLoaderThread);
 	CloseHandle(Target);
+	delete WAC_CLIENT_PATHNAME_A;
 
 	return WACAC_NOERR;
 }

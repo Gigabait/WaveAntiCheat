@@ -55,11 +55,12 @@ int wmain(int ArgCount, wchar_t* Args[])
 					return 1;
 				}
 
-				if (AttachClient(PID) != WACAC_NOERR)
+				switch (AttachClient(PID))
 				{
-					MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Connect to Target Process", L"WAC Fatal Error", MB_OK | MB_ICONERROR);
-
-					return 1;
+				case WACAC_NOERR: break;
+				case WACAC_NODLL: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Locate WACClient.dll", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
+				case WACAC_NOPROCESS: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Connect to Target Process", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
+				default: MessageBox(NULL, L"Wave Anti-Cheat Failed: Unknown Error Occurred", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
 				}
 
 				WACService* WAC = new WACService(SERVICE_NAME, TRUE, TRUE, FALSE);
