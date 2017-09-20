@@ -15,7 +15,7 @@ const wchar_t* FileBlacklist[] =
 
 bool BlacklistScan()
 {
-	for (auto Process : ProcessBlacklist)
+	for (auto& Process : ProcessBlacklist)
 	{
 		if (FindWindow((LPCWSTR)Process, NULL))
 		{
@@ -23,7 +23,7 @@ bool BlacklistScan()
 		}
 	}
 
-	for (auto File : FileBlacklist)
+	for (auto& File : FileBlacklist)
 	{
 		if (OpenFileMapping(FILE_MAP_READ, false, (LPCWSTR)File))
 		{
