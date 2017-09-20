@@ -13,7 +13,7 @@ const wchar_t* FileBlacklist[] =
 	L"CEHYPERSCANSETTINGS",
 };
 
-bool BlacklistScan()
+bool ScanBlacklist()
 {
 	for (auto& Process : ProcessBlacklist)
 	{
