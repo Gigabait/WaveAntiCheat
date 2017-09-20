@@ -2,8 +2,8 @@
 
 #include <string>
 
-// Relative or Absolute
-#define WAC_CLIENT_PATHNAME L"WACClient.dll"
+// ANSI File Name
+#define WAC_CLIENT_PATHNAME "WACClient.dll"
 
 // AttachClient() Return Codes
 #define WACAC_NOERR     1

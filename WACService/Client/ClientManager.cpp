@@ -32,8 +32,8 @@ int FindProcess(std::wstring ProcessName)
 
 int AttachClient(unsigned int ProcessID)
 {
-	WIN32_FIND_DATA FindDLLData;
-	HANDLE DLLHandle = FindFirstFile(WAC_CLIENT_PATHNAME, &FindDLLData);
+	WIN32_FIND_DATAA FindDLLData;
+	HANDLE DLLHandle = FindFirstFileA(WAC_CLIENT_PATHNAME, &FindDLLData);
 	if (DLLHandle == INVALID_HANDLE_VALUE)
 	{
 		FindClose(DLLHandle);
@@ -52,19 +52,16 @@ int AttachClient(unsigned int ProcessID)
 
 	// Begin Injection
 
-	// ANSI Version of WAC Client Pathname
-	char* WAC_CLIENT_PATHNAME_A = new char[ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2 + 1];
-	ZeroMemory(WAC_CLIENT_PATHNAME_A, ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2 + 1);
-	
-	size_t WAC_CLIENT_PATHNAME_A_LENGTH = 0;
-	wcstombs_s(&WAC_CLIENT_PATHNAME_A_LENGTH, WAC_CLIENT_PATHNAME_A, ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2, WAC_CLIENT_PATHNAME, (ARRAYSIZE(WAC_CLIENT_PATHNAME) * 2));
-	assert(WAC_CLIENT_PATHNAME_A_LENGTH > 0);
+	char* AbsPath = new char[MAX_PATH];
 
-	// Load with ANSI
+	GetFullPathNameA(WAC_CLIENT_PATHNAME, MAX_PATH, AbsPath, NULL);
+
+	std::string AbsPathStr = AbsPath;
+
 	LPVOID LoadLibraryAddress = (LPVOID)GetProcAddress(GetModuleHandleA("kernel32.dll"), "LoadLibraryA");
-	LPVOID DLLPathPayload = VirtualAllocEx(Target, NULL, WAC_CLIENT_PATHNAME_A_LENGTH, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	LPVOID DLLPathPayload = VirtualAllocEx(Target, NULL, AbsPathStr.length(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-	WriteProcessMemory(Target, DLLPathPayload, WAC_CLIENT_PATHNAME_A, WAC_CLIENT_PATHNAME_A_LENGTH, NULL);
+	WriteProcessMemory(Target, DLLPathPayload, AbsPathStr.c_str(), AbsPathStr.length(), NULL);
 
 	HANDLE TargetLoaderThread = CreateRemoteThread(Target, NULL, NULL, (LPTHREAD_START_ROUTINE)LoadLibraryAddress, DLLPathPayload, 0, NULL);
 
@@ -72,15 +69,15 @@ int AttachClient(unsigned int ProcessID)
 	if (Error != 0)
 	{
 		CloseHandle(Target);
-		delete WAC_CLIENT_PATHNAME_A;
+		delete AbsPath;
 
 		return WACAC_UNKNOWN;
 	}
 
-	VirtualFreeEx(Target, DLLPathPayload, WAC_CLIENT_PATHNAME_A_LENGTH, MEM_RELEASE);
+	VirtualFreeEx(Target, DLLPathPayload, AbsPathStr.length(), MEM_RELEASE);
 	CloseHandle(TargetLoaderThread);
 	CloseHandle(Target);
-	delete WAC_CLIENT_PATHNAME_A;
+	delete AbsPath;
 
 	return WACAC_NOERR;
 }
