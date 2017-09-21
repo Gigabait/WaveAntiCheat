@@ -57,15 +57,23 @@ int wmain(int ArgCount, wchar_t* Args[])
 				switch (AttachClient(PID))
 				{
 				case WACAC_NOERR: break;
-				case WACAC_NODLL: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Locate WACClient.dll", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
-				case WACAC_NOPROCESS: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Connect to Target Process", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
-				default: MessageBox(NULL, L"Wave Anti-Cheat Failed: Unknown Error Occurred", L"WAC Fatal Error", MB_OK | MB_ICONERROR); return 1;
+				case WACAC_NODLL: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Locate WACClient.dll", L"Wave Anti-Cheat", MB_OK | MB_ICONERROR); return 1;
+				case WACAC_NOPROCESS: MessageBox(NULL, L"Wave Anti-Cheat Failed: Could Not Connect to Target Process", L"Wave Anti-Cheat", MB_OK | MB_ICONERROR); return 1;
+				default: MessageBox(NULL, L"Wave Anti-Cheat Failed: Unknown Error Occurred", L"Wave Anti-Cheat", MB_OK | MB_ICONERROR); return 1;
 				}
 
 				WACService* WAC = new WACService(SERVICE_NAME, TRUE, TRUE, FALSE);
 
 				// Begin Service Message Handler
 				WACService::Run(*WAC);
+
+				// Run Environment Prechecks
+				switch (RuntimePrechecks())
+				{
+				case PR_CLEAN: break;
+				case PR_DRIVERSIGNING: MessageBox(NULL, L"Wave Anti-Cheat Failed: Driver Signing is Mandatory", L"Wave Anti-Cheat", MB_OK | MB_ICONERROR); return 1;
+				default: MessageBox(NULL, L"Wave Anti-Cheat Failed: Unknown Error Occurred", L"Wave Anti-Cheat", MB_OK | MB_ICONERROR); return 1;
+				}
 
 				// Begin WAC Runtime
 				Run(*WAC, PID, SCAN_INTERVAL_MS);

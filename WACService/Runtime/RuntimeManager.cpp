@@ -2,6 +2,14 @@
 #include "../Core/Service.h"
 #include "../Client/ClientManager.h"
 #include "../Scan/ScanManager.h"
+#include "SystemChecks.h"
+
+PrecheckResult RuntimePrechecks()
+{
+	if (!DriverSigning()) return PR_DRIVERSIGNING;
+
+	return PR_CLEAN;
+}
 
 void Run(WACService& Service, unsigned int ProcessID, unsigned int ScanInterval)
 {
