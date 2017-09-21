@@ -30,4 +30,6 @@ bool ScanBlacklist()
 			return true;
 		}
 	}
+
+	return false;
 }

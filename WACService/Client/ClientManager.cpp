@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <Psapi.h>
 #include <assert.h>
 
 int FindProcess(std::wstring ProcessName)
@@ -33,7 +34,7 @@ int FindProcess(std::wstring ProcessName)
 int AttachClient(unsigned int ProcessID)
 {
 	WIN32_FIND_DATAA FindDLLData;
-	HANDLE DLLHandle = FindFirstFileA(WAC_CLIENT_PATHNAME, &FindDLLData);
+	HANDLE DLLHandle = FindFirstFileA(WAC_CLIENT_FILENAME, &FindDLLData);
 	if (DLLHandle == INVALID_HANDLE_VALUE)
 	{
 		FindClose(DLLHandle);
@@ -54,7 +55,7 @@ int AttachClient(unsigned int ProcessID)
 
 	char* AbsPath = new char[MAX_PATH];
 
-	GetFullPathNameA(WAC_CLIENT_PATHNAME, MAX_PATH, AbsPath, NULL);
+	GetFullPathNameA(WAC_CLIENT_FILENAME, MAX_PATH, AbsPath, NULL);
 
 	std::string AbsPathStr = AbsPath;
 
@@ -79,5 +80,54 @@ int AttachClient(unsigned int ProcessID)
 	CloseHandle(Target);
 	delete AbsPath;
 
+	TargetProcessID = ProcessID;
+
 	return WACAC_NOERR;
+}
+
+bool VerifyClient()
+{
+	HANDLE Target = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, TargetProcessID);
+	if (!Target || Target == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
+
+	HMODULE ModuleList[1024];
+	DWORD cbNeeded;
+	if (!EnumProcessModules(Target, ModuleList, sizeof(ModuleList), &cbNeeded))
+	{
+		CloseHandle(Target);
+
+		return false;
+	}
+
+	char ModuleName[MAX_PATH] = { 0 };
+
+	for (int Iter = 0; Iter < (cbNeeded / sizeof(HMODULE)); ++Iter)
+	{
+		// Use ANSI to Match WAC_CLIENT_FILENAME
+		if (!GetModuleFileNameExA(Target, ModuleList[Iter], ModuleName, sizeof(ModuleName) / sizeof(char)))
+		{
+			CloseHandle(Target);
+
+			return false;
+		}
+
+		if (ModuleName == WAC_CLIENT_FILENAME)
+		{
+			CloseHandle(Target);
+
+			return true;
+		}
+	}
+
+	CloseHandle(Target);
+
+	return false;
+}
+
+void KillTarget()
+{
+
 }

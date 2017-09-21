@@ -8,13 +8,11 @@ class WACService
 private:
 	static WACService* Service;
 
-	PWSTR Name;
-
 	SERVICE_STATUS Status;
 	SERVICE_STATUS_HANDLE StatusHandle;
 
 public:
-	WACService(PWSTR ServiceName, BOOL CanStop = TRUE, BOOL CanShutdown = TRUE, BOOL CanPauseContinue = FALSE);
+	WACService(PWSTR ServiceName, BOOL CanStop, BOOL CanShutdown, BOOL CanPauseContinue);
 	virtual ~WACService();
 
 	static BOOL Run(WACService& Service);
@@ -22,6 +20,9 @@ public:
 private:
 	static void WINAPI ServiceMain(DWORD ArgCount, LPWSTR* Args);
 	static void WINAPI ServiceCtrlHandler(DWORD Ctrl);
+
+public:
+	PWSTR Name;
 	
 // WINAPI Handlers
 private:
