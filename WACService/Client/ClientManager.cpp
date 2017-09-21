@@ -129,5 +129,13 @@ bool VerifyClient()
 
 void KillTarget()
 {
+	HANDLE Target = OpenProcess(PROCESS_TERMINATE, FALSE, TargetProcessID);
+	if (!Target || Target == INVALID_HANDLE_VALUE)
+	{
+		// @todo Some Proper Error Handling Here
+	}
 
+	TerminateProcess(Target, ERROR_BAD_ENVIRONMENT);
+
+	CloseHandle(Target);
 }
