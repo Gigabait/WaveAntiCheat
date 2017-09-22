@@ -12,10 +12,10 @@ bool DriverSigning()
 	}
 
 	DWORD Type = REG_BINARY;
-	DWORD Result;
-	DWORD Size = sizeof(DWORD);
+	BYTE Result;
+	DWORD Size = sizeof(BYTE);
 
-	if (!RegQueryValueEx(DSPolicy, L"Policy", NULL, &Type, (LPBYTE)&Result, &Size))
+	if (!RegQueryValueEx(DSPolicy, L"Policy", NULL, &Type, &Result, &Size))
 	{
 		RegCloseKey(DSPolicy);
 
