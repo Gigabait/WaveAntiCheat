@@ -95,7 +95,7 @@ int wmain(int ArgCount, wchar_t* Args[])
 		wprintf(L"Parameters:\n");
 		wprintf(L" -install      Installs the service.\n");
 		wprintf(L" -uninstall    Uninstalls the service.\n\n");
-		wprintf(L" -guard  Activates the service, begins safeguarding the process specified from threats.\n"
+		wprintf(L" -guard        Activates the service, begins safeguarding the process specified from threats.\n"
 				 "               The service will resume idling when the target process closes.\n\n");
 
 		PRINT_USAGE
