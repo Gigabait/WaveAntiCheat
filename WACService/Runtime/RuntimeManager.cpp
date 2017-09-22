@@ -17,9 +17,9 @@ void Run(WACService& Service, unsigned int ProcessID, unsigned int ScanInterval)
 	{
 		if (RunScan() != THREAT_NONE)
 		{
-			MessageBox(NULL, L"Wave Anti-Cheat has Detected a Runtime Compromise, Shutting Down", L"Wave Anti-Cheat", MB_ICONERROR | MB_OK);
-
 			KillTarget();
+
+			MessageBox(NULL, L"Wave Anti-Cheat has Detected a Runtime Compromise, Shutting Down", L"Wave Anti-Cheat", MB_ICONERROR | MB_OK);
 
 			break;
 		}
